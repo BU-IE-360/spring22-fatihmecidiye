@@ -2,15 +2,11 @@
 
 
 ### Homework 1
-Homework Description [Here](/HW1/IE360_Spring22_HW1.pdf)
+[Homework Description](/HW1/IE360_Spring22_HW1.pdf)
 
-EVDS Data [Here](/HW1/EVDS.xlsx)
+[Rmd File](/HW1/Fatih1.Rmd) for Homework 1
 
-Google Trends Data [Here](/HW1/multiTimeline.xlsx)
-
-Rmd File for Homework 1 [Here](/HW1/Fatih1.Rmd)
-
-HTML File for Homework 1 [Here](/HW1/Fatih1.html)
+[HTML File](/HW1/Fatih1.html) for Homework 1
 
 ### Homework 2
 
