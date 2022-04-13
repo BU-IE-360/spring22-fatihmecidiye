@@ -1,12 +1,13 @@
 ---
-title: "Fatih Mecidiye"
+title: "IE360 Homework 1"
+author: "Fatih Mecidiye"
 output: html_document
 date: '2022-04-04'
 ---
 
 ## INTRODUCTION
 
-In today's world, as the technology improves, having electrical-electronic goods and computer has become need more than luxury for people. I wanted to examine the changes in this need by observing the spending on those goods in the homework. Then, I investigated the relationship between the fundamental finance indicators and the increase in expenses on technological devices. So, I used four different data from <https://evds2.tcmb.gov.tr/> and <https://trends.google.com/trends/> from March 2014 to February 2022.
+In today's world, as the technology improves, having electrical-electronic goods and computer has become a need more than luxury for people. I wanted to examine the changes in this need by observing the spending on those goods in the homework. Then, I investigated the relationship between the fundamental finance indicators and the increase in expenses on technological devices. So, I used four different data from <https://evds2.tcmb.gov.tr/> and <https://trends.google.com/trends/> from March 2014 to February 2022.
 
 Data Descriptions:
 
