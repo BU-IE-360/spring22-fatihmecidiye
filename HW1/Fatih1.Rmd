@@ -1,0 +1,373 @@
+---
+title: "Fatih Mecidiye"
+output: html_document
+date: '2022-04-04'
+---
+
+## INTRODUCTION
+
+In today's world, as the technology improves, having electrical-electronic goods and computer has become need more than luxury for people. I wanted to examine the changes in this need by observing the spending on those goods in the homework. Then, I investigated the relationship between the fundamental finance indicators and the increase in expenses on technological devices. So, I used four different data from <https://evds2.tcmb.gov.tr/> and <https://trends.google.com/trends/> from March 2014 to February 2022.
+
+Data Descriptions:
+
+1: Spending on Electric & Electronic Goods, Computers(Thousand TRY) ("Elektrik-Elektronik Eşya, Bilgisayar(Bin TL)-Düzey")
+
+2: USD ("(USD) ABD Doları (Döviz Alış)-Düzey")
+
+3: CPI ("Tüketici Fiyat Endeksi (Genel)-Düzey")
+
+4: Google Trends Result for Monthly 'Dizüstü Bilgisayar' Search
+
+The main motivation for doing this assignment was finding the answer of the questions: "As the years passed, is there a relation between the spending on technological devices and the USD prise, the CPI?" and "Is the increase in the USD price affect the amount of sold technological devices?". I reviewed the data monthly to find a rough answer to those questions. Also, I plotted these data separately in the sections below.
+
+### Libraries
+
+```{r warning=FALSE, message=FALSE}
+library(dplyr)
+library(readxl)
+library(lubridate)
+library(RColorBrewer)
+library(ggplot2)
+library(corrplot)
+```
+
+### Data Manipulator Function
+
+The function that manipulates the data for better and easily usage.
+
+```{r, include=TRUE}
+
+DataManipulator = function(a,data){
+  k=0
+  cellSeq = seq(3, 27, by = 3)
+  x = data.frame(Year=NA, Month=NA, a=NA)
+  for(i in cellSeq){
+    for(j in 1:12){
+      k = k+1
+      if(i==3){
+        x = rbind(x, c((2013 + (i/3)), month.abb[j+2], as.integer(data[k])))
+        if(j+2 == 12){
+          break
+        }
+      }
+      else if(i==27){
+        x = rbind(x, c((2013 + (i/3)), month.abb[j], as.integer(data[k])))
+        if(j==2){
+          break
+        }
+      }
+      else
+        x = rbind(x, c((2013 + (i/3)), month.abb[j], as.integer(data[k])))
+    }
+  }
+  
+  x = x[-1,]
+  return(x)
+}
+
+
+my_data = read_excel("EVDS.xlsx")
+trends = read_excel("multiTimeline.xlsx")
+```
+
+The data comes from the excel files is converted to DataFrame and edited.
+
+```{r,include=TRUE}
+my_dataFrame = data.frame(my_data)
+trends_dataFrame = data.frame(trends)
+
+my_dataFrame = my_dataFrame[1:96,]
+trends_dataFrame <- trends_dataFrame[4:99,]
+trends_dataFrame = data.frame(trends_dataFrame)
+
+colnames(my_dataFrame) <- c("Date", "SpentAmount" , "USD", "CPI")
+colnames(trends_dataFrame) <- c("# of Dizüstü Bilgisayar Search")
+
+for(i in 1:nrow(trends_dataFrame)) {      
+  trends_dataFrame[i,] = unlist(strsplit(trends_dataFrame[i,],","))[2]
+}
+```
+
+The data is prepared for plotting by using DataManipulator function defined above.
+
+```{r, include=TRUE}
+SpentAmount = DataManipulator(SpentAmount,my_dataFrame$SpentAmount)
+SpentAmount$a[is.na(SpentAmount$a)] = 0
+SpentAmount = SpentAmount %>% mutate(Date = ymd(paste(Year, Month, 15)))
+SpentAmount = SpentAmount %>% mutate(a = as.numeric(a))
+SpentAmount = SpentAmount %>% mutate(Month = match(Month, month.abb))
+colnames(SpentAmount) <- c("Year", "Month", "SpentAmount","Date")
+
+USD = DataManipulator(BuyingPrice,my_dataFrame$USD)
+USD$a[is.na(USD$a)] = 0
+USD = USD %>% mutate(Date = ymd(paste(Year, Month, 15)))
+USD = USD %>% mutate(a = as.numeric(a))
+USD = USD %>% mutate(Month = match(Month, month.abb))
+colnames(USD) <- c("Year", "Month", "USDBuyingPrice","Date")
+
+CPI = DataManipulator(CPI,my_dataFrame$CPI)
+CPI$a[is.na(CPI$a)] = 0
+CPI = CPI %>% mutate(Date = ymd(paste(Year, Month, 15)))
+CPI = CPI %>% mutate(a = as.numeric(a))
+CPI = CPI %>% mutate(Month = match(Month, month.abb))
+colnames(CPI) <- c("Year", "Month", "CPI","Date")
+
+SearchTrends = DataManipulator(Search,trends_dataFrame$`# of Dizüstü Bilgisayar Search`)
+SearchTrends$a[is.na(SearchTrends$a)] = 0
+SearchTrends = SearchTrends %>% mutate(Date = ymd(paste(Year, Month, 15)))
+SearchTrends = SearchTrends %>% mutate(a = as.numeric(a))
+SearchTrends = SearchTrends %>% mutate(Month = match(Month, month.abb))
+colnames(SearchTrends) <- c("Year", "Month", "Search","Date")
+
+
+```
+
+## 1) Monthly Spending on Electric & Electronic Goods, Computers(Thousand TRY) Data of Turkey over 2014-2022
+
+```{r, include=TRUE}
+##summary
+summary(SpentAmount$SpentAmount)
+```
+
+```{r, include=TRUE}
+## the data from 2014
+head(SpentAmount,10)
+```
+
+```{r, include=TRUE}
+## the data from the first two months of 2022 and from 2021
+tail(SpentAmount,14)
+```
+
+### 1.1 Plot of data
+
+```{r, echo=FALSE}
+ggplot(SpentAmount, aes(x=Date, y=SpentAmount)) +
+  geom_line(color = "purple", size = 1, aes(group=1)) +
+  labs(title = "Spending on Electric & Electronic Goods, Computers over 2014-2022 observed Monthly", 
+       x = "Date",
+       y = "Thousand TRY") +
+  scale_x_date(date_breaks = "6 months") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 1.2 Monthly Plot of Data
+
+```{r, echo=FALSE}
+ggplot(SpentAmount, aes(x=Month, y=SpentAmount)) +
+  geom_line(size = 1, aes(color=Year, group=Year)) +
+  labs(title = "Spending on Electric & Electronic Goods, Computers in Turkey observed Monthly in Years", 
+       x = "Months",
+       y = "Thousand TRY") +
+  scale_x_continuous(breaks = c(1:12)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 1.3 Boxplot of Data
+
+```{r, echo=FALSE}
+ggplot(SpentAmount, aes(x=Date, y=SpentAmount, group=year(Date))) +
+  geom_boxplot(aes(fill= factor(year(Date)))) +
+  scale_fill_brewer(palette = "PuOr", name = "Years") +
+  labs(title = "Boxplots of Spending on Electric & Electronic Goods, Computers in Turkey over 2014-2022 Year by Year", 
+       x = "Year Dates",
+       y = "Thousand TRY") +
+  scale_x_date(date_breaks = "1 year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 2) Monthly USD(Buying) Price Data of Turkey over 2014-2022
+
+```{r, include=TRUE}
+## summary
+summary(USD$USDBuyingPrice)
+```
+
+```{r, include=TRUE}
+## the data from 2014
+head(USD,10)
+```
+
+```{r, include=TRUE}
+## the data from the first two months of 2022 and from 2021
+tail(USD,14)
+```
+
+### 2.1 Plot of data
+
+```{r, echo=FALSE}
+ggplot(USD, aes(x=Date, y=USDBuyingPrice)) +
+  geom_line(color = "red", size = 1, aes(group=1)) +
+  labs(title = "USD(buying) Price over 2014-2022 observed Monthly", 
+       x = "Date",
+       y = "Price(TRY) ") +
+  scale_x_date(date_breaks = "6 months") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 2.2 Monthly Plot of Data
+
+```{r, echo=FALSE}
+ggplot(USD, aes(x=Month, y=USDBuyingPrice)) +
+  geom_line(size = 1, aes(color=Year, group=Year)) +
+  labs(title = "USD(buying) Price in Turkey observed Monthly in Years", 
+       x = "Months",
+       y = "Price(TRY)") +
+  scale_x_continuous(breaks = c(1:12)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+### 2.3 Boxplot of Data
+
+```{r , echo=FALSE}
+ggplot(USD, aes(x=Date, y=USDBuyingPrice, group=year(Date))) +
+  geom_boxplot(aes(fill= factor(year(Date)))) +
+  scale_fill_brewer(palette = "PuOr", name = "Years") +
+  labs(title = "Boxplots of USD(buying) Price in Turkey over 2014-2022 Year by Year", 
+       x = "Year Dates",
+       y = "Price(TRY)") +
+  scale_x_date(date_breaks = "1 year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 3) Monthly CPI Data of Turkey over 2014-2022
+
+```{r, include=TRUE}
+## summary
+summary(CPI$CPI)
+```
+
+```{r, include=TRUE}
+## the data from 2014
+head(CPI,10)
+```
+
+```{r, include=TRUE}
+## the data from the first two months of 2022 and from 2021
+tail(CPI,14)
+```
+
+### 3.1 Plot of Data
+
+```{r , echo=FALSE}
+ggplot(CPI, aes(x=Date, y=CPI)) +
+  geom_line(color = "red", size = 1, aes(group=1)) +
+  labs(title = "CPI over 2014-2022 observed Monthly", 
+       x = "Date",
+       y = "CPI ") +
+  scale_x_date(date_breaks = "6 months") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 3.2 Monthly Plot of Data
+
+```{r , echo=FALSE}
+ggplot(CPI, aes(x=Month, y=CPI)) +
+  geom_line(size = 1, aes(color=Year, group=Year)) +
+  labs(title = "CPI in Turkey observed Monthly in Years", 
+       x = "Months",
+       y = "CPI") +
+  scale_x_continuous(breaks = c(1:12)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+### 3.3 Boxplot of Data
+
+```{r , echo=FALSE}
+ggplot(CPI, aes(x=Date, y=CPI, group=year(Date))) +
+  geom_boxplot(aes(fill= factor(year(Date)))) +
+  scale_fill_brewer(palette = "PuOr", name = "Years") +
+  labs(title = "Boxplots of CPI in Turkey over 2014-2022 Year by Year", 
+       x = "Year Dates",
+       y = "CPI") +
+  scale_x_date(date_breaks = "1 year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 4) Google Trends Result for Monthly 'Dizüstü Bilgisayar' Search (2014-2022)
+
+```{r, include=TRUE}
+## summary
+summary(SearchTrends$Search)
+```
+
+```{r, include=TRUE}
+## the data from 2014
+head(SearchTrends,10)
+```
+
+```{r, include=TRUE}
+## the data from the first two months of 2022 and from 2021
+tail(SearchTrends,14)
+```
+
+### 4.1 Plot of Data
+
+```{r , echo=FALSE}
+ggplot(SearchTrends, aes(x=Date, y=Search)) +
+  geom_line(color = "red", size = 1, aes(group=1)) +
+  labs(title = "'Dizüstü Bilgisayar' Search over 2014-2022 observed Monthly", 
+       x = "Date",
+       y = "Search") +
+  scale_x_date(date_breaks = "6 months") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 4.2 Monthly Plot of Data
+
+```{r , echo=FALSE}
+ggplot(SearchTrends, aes(x=Month, y=Search)) +
+  geom_line(size = 1, aes(color=Year, group=Year)) +
+  labs(title = "'Dizüstü Bilgisayar' Search in Turkey observed Monthly in Years", 
+       x = "Months",
+       y = "Search") +
+  scale_x_continuous(breaks = c(1:12)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+### 4.3 Boxplot of Data
+
+```{r , echo=FALSE}
+ggplot(SearchTrends, aes(x=Date, y=Search, group=year(Date))) +
+  geom_boxplot(aes(fill= factor(year(Date)))) +
+  scale_fill_brewer(palette = "PuOr", name = "Years") +
+  labs(title = "Boxplots of 'Dizüstü Bilgisayar' Search in Turkey over 2014-2022 Year by Year", 
+       x = "Year Dates",
+       y = "Search") +
+  scale_x_date(date_breaks = "1 year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 5) Correlation Matrix of The Variables
+
+```{r , echo=FALSE}
+data <- data.frame(as.double(my_dataFrame$SpentAmount), as.double(my_dataFrame$USD), as.double(my_dataFrame$CPI), as.double(trends_dataFrame$`# of Dizüstü Bilgisayar Search`))
+names(data) <- c("SpentAmount", "USD", "CPI" , "'Dizüstü Bilgisayar' Search")
+data_correlation = cor(data)
+corrplot(data_correlation, method="number")
+```
+
+## CONCLUSION
+
+CPI is a measure of the average changes in the prices of a particular set of products and services purchased by a typical consumer. The increases in the exchange rate increase the costs of producers, they are also reflected in the sales price. By considering that relation, it is not surprising that the USD price and the CPI is highly correlated. The graphs in the part 2 and part 3 demonstrate that strong relationship clearly. Also, correlation matrix in the part 5 support the plots.
+
+The price of technological devices increased dramatically over the years as the USD price increases. Additionally, as seen in the section 1, the increase in the total expenditure amount shows similarity with USD price and CPI. That result may show us that the people do not give up the expenses on technological devices. Therefore, we may interpret the situation as Electric & Electronic Goods and Computers became need for human.
+
+In the part 5, the correlation matrix shows that the search trend and the spent amount of money on technological devices is moderately associated.
+
+In conclusion, the results get during the assignment can be used to roughly answer the asked questions at the introduction part. In other words, by the help of used data, the relations between USD price, CPI and the spent money for buying electrical devices can be interpreted.
