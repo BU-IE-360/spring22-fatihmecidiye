@@ -13,7 +13,7 @@
 
 [Rmd File](/HW2/hw2_fatih.Rmd) for Homework 2
 
-[HTML File](/HW1/hw2_fatih.html) for Homework 2
+[HTML File](/HW2/hw2_fatih.html) for Homework 2
 
 
 ### Homework 3
