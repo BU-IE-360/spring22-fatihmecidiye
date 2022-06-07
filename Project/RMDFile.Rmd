@@ -675,7 +675,7 @@ Comparing the error values of the models, and considering our previous observati
 
 # 8. Code
 
-Rmd codes are [here](https://github.com/BU-IE-360/spring22-fatihmecidiye/blob/gh-pages/Project/RMDFile.Rmd)
+Rmd codes are [here](https://bu-ie-360.github.io/spring22-fatihmecidiye/Project/RMDFile.Rmd)
 
 
 
